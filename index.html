@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="description" content="Laboratorio visual y manipulativo de porcentajes, fracciones y decimales para pantallas digitales y ordenadores (5º de Primaria).">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Porcentajes en Acción · Laboratorio y Retos (5º Primaria)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* Configuración base optimizada para pizarras digitales táctiles y ordenadores */
+    :root {
+      --font-display: 'Fredoka', system-ui, -apple-system, sans-serif;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    h1, h2, h3, .font-display {
+      font-family: var(--font-display);
+    }
+
+    /* Evitar desplazamiento accidental al pintar con el dedo en la cuadrícula */
+    .grid-touch-area {
+      touch-action: none;
+    }
+
+    /* Animaciones suaves para celdas y retroalimentación */
+    .cell-item {
+      transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .cell-item:active {
+      transform: scale(0.92);
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.94); opacity: 0.5; }
+      70% { transform: scale(1.03); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .animate-pop {
+      animation: popIn 0.25s ease-out forwards;
+    }
+
+    /* Estilización personalizada del deslizador táctil grande */
+    input[type="range"].big-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 18px;
+      border-radius: 999px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"].big-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 4px solid currentColor;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    input[type="range"].big-slider::-webkit-slider-thumb:active {
+      transform: scale(1.18);
+    }
+
+    /* Ocultar flechas en inputs numéricos */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen lg:h-screen lg:overflow-hidden flex flex-col transition-colors duration-300" id="appBody">
+
+  <!-- BARRA SUPERIOR DE NAVEGACIÓN -->
+  <header class="bg-white border-b-2 border-slate-200 px-3 sm:px-5 py-2.5 shadow-sm flex flex-wrap items-center justify-between gap-2.5 shrink-0 z-20" id="topHeader">
+    <!-- Marca / Título -->
+    <div class="flex items-center gap-3">
+      <div id="brandIcon" class="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-display text-2xl font-bold shadow-md">
+        %
+      </div>
+      <div>
+        <h1 class="text-lg sm:text-2xl font-bold tracking-tight leading-none text-slate-900">Porcentajes en Acción</h1>
+        <p class="text-xs font-medium text-slate-500 mt-0.5 hidden sm:block">5º Primaria · Pizarra Digital y Ordenador</p>
+      </div>
+    </div>
+
+    <!-- Selector de Modo (2 Pantallas Principales) -->
+    <nav class="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 gap-1" role="tablist">
+      <button id="tabLab" onclick="switchMode('lab')" class="px-3.5 sm:px-5 py-2 rounded-xl font-display font-semibold text-sm sm:text-lg flex items-center gap-2 transition-all bg-indigo-600 text-white shadow-sm cursor-pointer">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        <span>1. Explorar 10×10</span>
+      </button>
+      <button id="tabChallenges" onclick="switchMode('challenges')" class="px-3.5 sm:px-5 py-2 rounded-xl font-display font-semibold text-sm sm:text-lg flex items-center gap-2 transition-all text-slate-600 hover:bg-white/70 cursor-pointer">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+        <span>2. Retos (30)</span>
+      </button>
+    </nav>
+
+    <!-- Herramientas Derecha: Color + Botón Instalar App / Ayuda GitHub -->
+    <div class="flex items-center gap-2">
+      <!-- Selector de Paleta Visual de Aula -->
+      <div class="hidden md:flex items-center gap-1.5 bg-slate-100 px-2.5 py-1.5 rounded-2xl border border-slate-200" title="Cambiar color de las fichas">
+        <button onclick="setTheme('indigo')" class="theme-btn w-7 h-7 rounded-full bg-indigo-600 border-2 border-white shadow ring-2 ring-slate-700 scale-110 transition-transform active:scale-90 cursor-pointer" data-theme="indigo" aria-label="Tema Azul Índigo"></button>
+        <button onclick="setTheme('emerald')" class="theme-btn w-7 h-7 rounded-full bg-emerald-600 border-2 border-white shadow opacity-75 hover:opacity-100 transition-transform active:scale-90 cursor-pointer" data-theme="emerald" aria-label="Tema Verde Esmeralda"></button>
+        <button onclick="setTheme('amber')" class="theme-btn w-7 h-7 rounded-full bg-amber-500 border-2 border-white shadow opacity-75 hover:opacity-100 transition-transform active:scale-90 cursor-pointer" data-theme="amber" aria-label="Tema Naranja Ámbar"></button>
+        <button onclick="setTheme('rose')" class="theme-btn w-7 h-7 rounded-full bg-rose-600 border-2 border-white shadow opacity-75 hover:opacity-100 transition-transform active:scale-90 cursor-pointer" data-theme="rose" aria-label="Tema Coral"></button>
+      </div>
+
+      <!-- Botón Instalar App / GitHub -->
+      <button onclick="openAppModal()" id="btnOpenInstallModal" class="px-3 py-2 rounded-2xl bg-slate-800 hover:bg-slate-900 active:scale-95 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-xs transition cursor-pointer" title="Descargar o instalar como aplicación desde GitHub">
+        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        <span class="hidden sm:inline">Instalar App / GitHub</span>
+        <span class="sm:hidden">App</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto p-3 sm:p-4 lg:p-5 overflow-y-auto lg:overflow-hidden flex flex-col">
+
+    <!-- ===================================================================== -->
+    <!-- PANTALLA 1: LABORATORIO MANIPULATIVO (CUADRÍCULA 10x10)               -->
+    <!-- ===================================================================== -->
+    <section id="viewLab" class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 h-full">
+      
+      <!-- Columna Izquierda: Cuadrícula 10x10 Interactiva -->
+      <div class="lg:col-span-6 bg-white rounded-3xl border-2 border-slate-200 p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <div>
+            <h2 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+              <span>Cuadrícula de 100 partes</span>
+              <span class="text-xs font-bold uppercase px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">10 × 10 = 100</span>
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-500 font-medium">Pinta con el dedo/ratón o usa las flechas del teclado (← → ↑ ↓)</p>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button onclick="organizeLabGrid()" class="px-3.5 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 active:bg-sky-200 text-sky-700 border border-sky-200 font-bold text-sm flex items-center gap-1.5 transition cursor-pointer" title="Agrupa las casillas pintadas desde arriba a la izquierda">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
+              <span>Ordenar fichas</span>
+            </button>
+            <button onclick="setLabCount(0)" class="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 active:bg-rose-200 text-rose-700 border border-rose-200 font-bold text-sm flex items-center gap-1.5 transition cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              <span>Limpiar</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tablero 10x10 centrado y responsivo -->
+        <div class="flex-1 flex items-center justify-center my-1 min-h-[280px]">
+          <div id="labGrid" class="grid-touch-area grid grid-cols-10 gap-1 sm:gap-1.5 p-2.5 sm:p-3 bg-slate-100 rounded-2xl border-2 border-slate-300 aspect-square w-full max-w-[450px] lg:max-h-[calc(100vh-230px)] shadow-inner">
+            <!-- Las 100 celdas se generan con JS -->
+          </div>
+        </div>
+
+        <!-- Leyenda visual rápida -->
+        <div class="flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-600 pt-2 border-t border-slate-100">
+          <div class="flex items-center gap-2">
+            <span id="legendActiveBox" class="w-4 h-4 rounded bg-indigo-600 inline-block"></span>
+            <span>Pintadas: <strong id="labPaintedText" class="text-slate-900">25</strong></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-4 h-4 rounded bg-white border border-slate-300 inline-block"></span>
+            <span>Sin pintar: <strong id="labUnpaintedText" class="text-slate-900">75</strong></span>
+          </div>
+          <div class="text-slate-500">Total: <strong>100</strong></div>
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Controles Autorrellenables + Representación Matemática -->
+      <div class="lg:col-span-6 flex flex-col gap-4 justify-between">
+        
+        <!-- Bloque 1: Panel de Representación Matemática en Tiempo Real -->
+        <div class="bg-white rounded-3xl border-2 border-slate-200 p-4 sm:p-5 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg sm:text-xl font-bold text-slate-800">Representación Matemática</h2>
+            <span id="labMeaningBadge" class="px-3 py-1 rounded-full text-sm font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+              25 de cada 100
+            </span>
+          </div>
+
+          <!-- 3 Tarjetas de Equivalencia Grande -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            
+            <!-- 1. PORCENTAJE -->
+            <div id="cardPercent" class="rounded-2xl border-2 border-indigo-200 bg-indigo-50/70 p-3.5 flex flex-col items-center justify-center text-center">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-700 mb-1">Porcentaje</span>
+              <div id="displayPercent" class="font-display text-4xl sm:text-5xl font-bold text-indigo-700 leading-none my-1">
+                25 %
+              </div>
+              <span id="displayPercentSub" class="text-xs font-semibold text-indigo-900/75 mt-1">
+                25 por ciento
+              </span>
+            </div>
+
+            <!-- 2. FRACCIÓN DECIMAL Y SIMPLIFICADA -->
+            <div class="rounded-2xl border-2 border-emerald-200 bg-emerald-50/70 p-3.5 flex flex-col items-center justify-center text-center">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-700 mb-1">Fracción</span>
+              <div class="flex items-center justify-center gap-3 my-0.5">
+                <!-- Fracción sobre 100 -->
+                <div class="flex flex-col items-center font-display font-bold text-2xl sm:text-3xl text-emerald-800 leading-none">
+                  <span id="displayFracNum">25</span>
+                  <span class="w-11 h-1 bg-emerald-700 rounded-full my-1"></span>
+                  <span>100</span>
+                </div>
+                <!-- Flecha y Fracción Irreducible -->
+                <div id="simplifiedContainer" class="flex items-center gap-2.5">
+                  <span class="text-emerald-600 font-bold text-xl">=</span>
+                  <div class="flex flex-col items-center font-display font-bold text-2xl sm:text-3xl text-emerald-700 bg-white px-3 py-1 rounded-xl border border-emerald-200 shadow-xs leading-none">
+                    <span id="displaySimpNum">1</span>
+                    <span class="w-8 h-1 bg-emerald-600 rounded-full my-1"></span>
+                    <span id="displaySimpDen">4</span>
+                  </div>
+                </div>
+              </div>
+              <span id="displayFracSub" class="text-xs font-semibold text-emerald-900/75 mt-1">
+                Simplificada: 1/4
+              </span>
+            </div>
+
+            <!-- 3. NÚMERO DECIMAL -->
+            <div class="rounded-2xl border-2 border-amber-200 bg-amber-50/70 p-3.5 flex flex-col items-center justify-center text-center">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-amber-800 mb-1">Número Decimal</span>
+              <div id="displayDecimal" class="font-display text-4xl sm:text-5xl font-bold text-amber-700 leading-none my-1">
+                0,25
+              </div>
+              <span id="displayDecimalSub" class="text-xs font-semibold text-amber-900/75 mt-1">
+                25 centésimas
+              </span>
+            </div>
+          </div>
+
+          <!-- Barra de Progreso Lineal Complementaria -->
+          <div class="mt-4">
+            <div class="flex justify-between text-xs font-bold text-slate-500 mb-1">
+              <span>0 % (Nada)</span>
+              <span>50 % (Mitad)</span>
+              <span>100 % (Todo)</span>
+            </div>
+            <div class="w-full h-5 bg-slate-100 rounded-full overflow-hidden border border-slate-300 p-0.5">
+              <div id="labProgressBar" class="h-full rounded-full bg-indigo-600 transition-all duration-200" style="width: 25%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bloque 2: Controles Rápidos y Autorrellenables -->
+        <div class="bg-white rounded-3xl border-2 border-slate-200 p-4 sm:p-5 shadow-sm flex-1 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-base sm:text-lg font-bold text-slate-800">Autorrellenar cuadrícula</h3>
+              <span id="sliderBadge" class="font-display font-bold text-lg text-indigo-600">25 %</span>
+            </div>
+            
+            <!-- Deslizador Táctil Grande -->
+            <div class="py-2">
+              <input id="labSlider" type="range" min="0" max="100" value="25" class="big-slider w-full bg-slate-200 text-indigo-600" oninput="setLabCount(parseInt(this.value))">
+            </div>
+
+            <!-- Botones de Ajuste Fino (-10, -1, +1, +10) -->
+            <div class="grid grid-cols-4 gap-2 sm:gap-3 mt-2">
+              <button onclick="adjustLabCount(-10)" class="py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 font-display font-bold text-lg sm:text-xl text-slate-700 border border-slate-300 transition cursor-pointer">
+                -10
+              </button>
+              <button onclick="adjustLabCount(-1)" class="py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 font-display font-bold text-lg sm:text-xl text-slate-700 border border-slate-300 transition cursor-pointer">
+                -1
+              </button>
+              <button onclick="adjustLabCount(1)" class="py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 font-display font-bold text-lg sm:text-xl text-slate-700 border border-slate-300 transition cursor-pointer">
+                +1
+              </button>
+              <button onclick="adjustLabCount(10)" class="py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 font-display font-bold text-lg sm:text-xl text-slate-700 border border-slate-300 transition cursor-pointer">
+                +10
+              </button>
+            </div>
+          </div>
+
+          <!-- Porcentajes Clave de Acceso Directo -->
+          <div class="mt-4 pt-3 border-t border-slate-100">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500 block mb-2">Porcentajes habituales (pulsa para ver):</span>
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              <button onclick="setLabCount(10)" class="preset-btn py-2.5 px-2 rounded-xl border-2 border-slate-200 hover:border-indigo-400 bg-slate-50 font-display font-bold text-base sm:text-lg text-slate-800 active:scale-95 transition cursor-pointer">10%</button>
+              <button onclick="setLabCount(20)" class="preset-btn py-2.5 px-2 rounded-xl border-2 border-slate-200 hover:border-indigo-400 bg-slate-50 font-display font-bold text-base sm:text-lg text-slate-800 active:scale-95 transition cursor-pointer">20%</button>
+              <button onclick="setLabCount(25)" class="preset-btn py-2.5 px-2 rounded-xl border-2 border-slate-200 hover:border-indigo-400 bg-slate-50 font-display font-bold text-base sm:text-lg text-slate-800 active:scale-95 transition cursor-pointer">25%</button>
+              <button onclick="setLabCount(50)" class="preset-btn py-2.5 px-2 rounded-xl border-2 border-slate-200 hover:border-indigo-400 bg-slate-50 font-display font-bold text-base sm:text-lg text-slate-800 active:scale-95 transition cursor-pointer">50%</button>
+              <button onclick="setLabCount(75)" class="preset-btn py-2.5 px-2 rounded-xl border-2 border-slate-200 hover:border-indigo-400 bg-slate-50 font-display font-bold text-base sm:text-lg text-slate-800 active:scale-95 transition cursor-pointer">75%</button>
+              <button onclick="setLabCount(100)" class="preset-btn py-2.5 px-2 rounded-xl border-2 border-slate-200 hover:border-indigo-400 bg-slate-50 font-display font-bold text-base sm:text-lg text-slate-800 active:scale-95 transition cursor-pointer">100%</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ===================================================================== -->
+    <!-- PANTALLA 2: RETOS DE LA VIDA REAL (3 NIVELES × 10 RETOS = 30 RETOS)   -->
+    <!-- ===================================================================== -->
+    <section id="viewChallenges" class="hidden flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 h-full">
+      
+      <!-- Columna Izquierda: Niveles + Enunciado + Tablero 10x10 -->
+      <div class="lg:col-span-6 bg-white rounded-3xl border-2 border-slate-200 p-3.5 sm:p-4 shadow-sm flex flex-col justify-between">
+        
+        <div>
+          <!-- Selector de 3 Niveles + Marcador -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+            <div class="flex flex-wrap items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button id="btnDiff1" onclick="setDifficulty(1)" class="px-2.5 py-1.5 rounded-lg font-bold text-xs sm:text-sm bg-white text-indigo-700 shadow-xs cursor-pointer transition">
+                Nivel 1 · Clásicos
+              </button>
+              <button id="btnDiff2" onclick="setDifficulty(2)" class="px-2.5 py-1.5 rounded-lg font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 cursor-pointer transition">
+                Nivel 2 · Problemas
+              </button>
+              <button id="btnDiff3" onclick="setDifficulty(3)" class="px-2.5 py-1.5 rounded-lg font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 cursor-pointer transition">
+                Nivel 3 · Rebajas e IVA
+              </button>
+            </div>
+
+            <!-- Estrellas y Progreso de Nivel -->
+            <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-xl" title="Retos completados en este nivel">
+                <span class="text-xs font-extrabold text-indigo-800">Nivel: <span id="levelProgressText">0/10</span></span>
+              </div>
+              <div class="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl">
+                <span class="text-base">⭐</span>
+                <span class="font-display font-bold text-amber-800 text-sm sm:text-base" id="scoreStars">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navegador rápido de los 10 retos del nivel (1 al 10) -->
+          <div class="flex items-center justify-between gap-1 mt-2 overflow-x-auto pb-1" id="challengeDotsBar">
+            <!-- Botones 1..10 generados por JS -->
+          </div>
+
+          <!-- Tarjeta de Situación Real -->
+          <div id="challengePromptBox" class="mt-2 p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 to-sky-50 border-2 border-indigo-200 flex items-start gap-3 animate-pop">
+            <div id="challengeEmoji" class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white shadow-sm border border-indigo-100 flex items-center justify-center text-2xl sm:text-3xl shrink-0 mt-0.5">
+              👟
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-wrap items-center justify-between gap-1.5 mb-1">
+                <div class="flex items-center gap-1.5">
+                  <span id="challengeCategory" class="text-[11px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-indigo-600 text-white">Rebajas</span>
+                  <span id="challengeNumberLabel" class="text-xs font-bold text-slate-500">Reto 1 de 10</span>
+                </div>
+                <!-- Botón de Ayuda Contextual para Nivel 3 (Descuentos vs Aumentos/IVA) -->
+                <button id="btnToggleLevel3Help" onclick="toggleLevel3Help()" class="hidden px-2.5 py-0.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-1 shadow-xs cursor-pointer transition">
+                  <span>💡 ¿Descuento o IVA?</span>
+                </button>
+              </div>
+              <p id="challengeText" class="text-sm sm:text-base font-bold text-slate-800 leading-snug">
+                <!-- Enunciado del reto -->
+              </p>
+            </div>
+          </div>
+
+          <!-- Panel Desplegable de Ayuda Pedagógica Nivel 3 (5º Primaria) -->
+          <div id="level3HelpCard" class="hidden mt-2 p-3 rounded-2xl bg-purple-50 border-2 border-purple-200 text-xs sm:text-sm text-purple-950 animate-pop">
+            <div class="flex items-center justify-between mb-1">
+              <strong class="font-display text-purple-800 text-sm">📘 Chuleta de 5º: Descuentos y Aumentos (IVA)</strong>
+              <button onclick="toggleLevel3Help()" class="text-purple-700 font-bold hover:underline text-xs cursor-pointer">Cerrar ✕</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+              <div class="bg-white/90 p-2 rounded-xl border border-purple-200">
+                <span class="font-extrabold text-emerald-700 block">📉 Descuento / Rebaja (Se resta)</span>
+                <p class="text-xs text-slate-700 mt-0.5">El precio baja. Si te descuentan el <strong>20%</strong>, pagas el <strong>80%</strong> (100% − 20%).</p>
+              </div>
+              <div class="bg-white/90 p-2 rounded-xl border border-purple-200">
+                <span class="font-extrabold text-purple-700 block">📈 Aumento / IVA (Se suma)</span>
+                <p class="text-xs text-slate-700 mt-0.5">El IVA es un impuesto que sube el precio. Con <strong>21% de IVA</strong>, pagas el <strong>121%</strong>, pero el impuesto añadido es <strong>21%</strong>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cuadrícula 10x10 del Reto + Controles Rápidos -->
+        <div class="flex-1 flex flex-col items-center justify-center my-1.5">
+          <div class="flex items-center justify-between w-full max-w-[360px] mb-1 px-1">
+            <span class="text-xs sm:text-sm font-bold text-slate-600">
+              Paso 1 · Pintadas: <strong id="challengePaintedCount" class="text-indigo-700 text-base">0</strong> / 100
+            </span>
+            <div class="flex items-center gap-1">
+              <button onclick="adjustChallengeGrid(-10)" class="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 font-bold text-xs text-slate-700 border border-slate-300 cursor-pointer">-10</button>
+              <button onclick="adjustChallengeGrid(-1)" class="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 font-bold text-xs text-slate-700 border border-slate-300 cursor-pointer">-1</button>
+              <button onclick="adjustChallengeGrid(1)" class="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 font-bold text-xs text-slate-700 border border-slate-300 cursor-pointer">+1</button>
+              <button onclick="adjustChallengeGrid(10)" class="px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 font-bold text-xs text-slate-700 border border-slate-300 cursor-pointer">+10</button>
+              <button onclick="clearChallengeGrid()" class="px-2 py-0.5 rounded-lg bg-rose-50 hover:bg-rose-100 font-bold text-xs text-rose-700 border border-rose-200 cursor-pointer">Borrar</button>
+            </div>
+          </div>
+
+          <div id="challengeGrid" class="grid-touch-area grid grid-cols-10 gap-1 p-2 bg-slate-100 rounded-2xl border-2 border-slate-300 aspect-square w-full max-w-[330px] lg:max-h-[calc(100vh-390px)] shadow-inner">
+            <!-- 100 celdas generadas por JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Casillas de Respuesta + Teclado Numérico Táctil -->
+      <div class="lg:col-span-6 bg-white rounded-3xl border-2 border-slate-200 p-4 sm:p-5 shadow-sm flex flex-col justify-between">
+        
+        <div>
+          <div class="flex items-center justify-between mb-2.5">
+            <h3 class="text-lg sm:text-xl font-bold text-slate-800">Paso 2: Completa las 3 formas</h3>
+            <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">Toca casilla o usa teclado</span>
+          </div>
+
+          <!-- 3 Casillas Interactivas (Porcentaje, Fracción, Decimal) -->
+          <div class="grid grid-cols-3 gap-2.5 sm:gap-3">
+            
+            <!-- Input Porcentaje -->
+            <div onclick="focusField('percent')" id="box-percent" class="input-card rounded-2xl border-2 border-indigo-500 ring-4 ring-indigo-500/15 bg-indigo-50/40 p-2.5 sm:p-3 flex flex-col items-center justify-center cursor-pointer transition">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-700 mb-1.5">Porcentaje</span>
+              <div class="flex items-center justify-center gap-1">
+                <div id="val-percent" class="min-w-[60px] sm:min-w-[74px] h-11 sm:h-13 px-2 rounded-xl bg-white border-2 border-indigo-300 flex items-center justify-center font-display text-2xl sm:text-3xl font-bold text-slate-900">
+                  <span class="text-slate-300">?</span>
+                </div>
+                <span class="font-display text-2xl font-bold text-indigo-700">%</span>
+              </div>
+              <span class="text-[11px] font-semibold text-slate-500 mt-1.5">Tanto por ciento</span>
+            </div>
+
+            <!-- Input Fracción (Numerador / Denominador) -->
+            <div class="rounded-2xl border-2 border-slate-200 bg-emerald-50/40 p-2 flex flex-col items-center justify-center transition" id="box-fraction-wrapper">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-700 mb-1">Fracción</span>
+              <div class="flex flex-col items-center">
+                <div onclick="focusField('num')" id="box-num" class="input-card min-w-[66px] sm:min-w-[76px] h-9 sm:h-10 px-2 rounded-xl bg-white border-2 border-emerald-300 flex items-center justify-center font-display text-xl sm:text-2xl font-bold text-slate-900 cursor-pointer">
+                  <span class="text-slate-300">?</span>
+                </div>
+                <div class="w-16 h-1 bg-emerald-700 rounded-full my-1"></div>
+                <div onclick="focusField('den')" id="box-den" class="input-card min-w-[66px] sm:min-w-[76px] h-9 sm:h-10 px-2 rounded-xl bg-white border-2 border-emerald-300 flex items-center justify-center font-display text-xl sm:text-2xl font-bold text-slate-900 cursor-pointer">
+                  <span class="text-slate-300">?</span>
+                </div>
+              </div>
+              <span class="text-[11px] font-semibold text-slate-500 mt-1 text-center leading-tight">Ej. 25/100 o 1/4</span>
+            </div>
+
+            <!-- Input Número Decimal -->
+            <div onclick="focusField('decimal')" id="box-decimal" class="input-card rounded-2xl border-2 border-slate-200 bg-amber-50/40 p-2.5 sm:p-3 flex flex-col items-center justify-center cursor-pointer transition">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-amber-800 mb-1.5">Decimal</span>
+              <div id="val-decimal" class="min-w-[78px] sm:min-w-[92px] h-11 sm:h-13 px-2 rounded-xl bg-white border-2 border-amber-300 flex items-center justify-center font-display text-2xl sm:text-3xl font-bold text-slate-900">
+                <span class="text-slate-300">?</span>
+              </div>
+              <span class="text-[11px] font-semibold text-slate-500 mt-1.5">Ej. 0,25</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Teclado Numérico Táctil Integrado -->
+        <div class="my-2.5 bg-slate-100 p-2.5 rounded-2xl border border-slate-200">
+          <div class="grid grid-cols-6 gap-2">
+            <button onclick="pressKey('1')" class="num-key py-2.5 sm:py-3 rounded-xl bg-white hover:bg-slate-50 active:bg-slate-200 font-display text-xl sm:text-2xl font-bold text-slate-800 shadow-xs border border-slate-300 cursor-pointer">1</button>
+            <button onclick="pressKey('2')" class="num-key py-2.5 sm:py-3 rounded-xl bg-white hover:bg-slate-50 active:bg-slate-200 font-display text-xl sm:text-2xl font-bold text-slate-800 shadow-xs border border-slate-300 cursor-pointer">2</button>
+            <button onclick="pressKey('3')" class="num-key py-2.5 sm:py-3 rounded-xl bg-white hover:bg-slate-50 active:bg-slate-200 font-display text-xl sm:text-2xl font-bold text-slate-800 shadow-xs border border-slate-300 cursor-pointer">3</button>
+            <button onclick="pressKey('4')" class="num-key py-2.5 sm:py-3 rounded-xl bg-white hover:bg-slate-50 active:bg-slate-200 font-display text-xl sm:text-2xl font-bold text-slate-800 shadow-xs border border-slate-300 cursor-pointer">4</button>
+            <button onclick="pressKey('5')" class="num-key py-2.5 sm:py-3 rounded-xl bg-white hover:bg-slate-50 active:bg-slate-200 font-display text-xl sm:text-2xl font-bold text-slate-800 shadow-xs border border-slate-300 cursor-pointer">5</button>
+            <button onclick="pressBackspace()" class="py-2.5 sm:py-3 rounded-xl bg-rose-100 hover:bg-rose-200 active:bg-rose-300 font-display text-lg sm:text-xl font-bold text-rose-700 shadow-xs border border-rose-300 flex items-center justify-center cursor-pointer" aria-label="Borrar dígito">
+              ⌫
+            </button>
+
+            <button onclick="pressKey('6')" class="num-key py-2.5 sm:py-3 rounded-xl bg-white hover:bg-slate-50 active:bg-slate-200 font-display text-xl sm:text-2xl font-bold text-slate-800 shadow-xs border border-slate-300 cursor-pointer">6</button>
+            <button onclick="pressKey('7')" class="num-key py-2.5 sm:py-3 rounded-xl bg-white hover:bg-slate-50 active:bg-slate-200 font-display text-xl sm:text-2xl font-bold text-slate-800 shadow-xs border border-slate-300 cursor-pointer">7</button>
+            <button onclick="pressKey('8')" class="num-key py-2.5 sm:py-3 rounded-xl bg-white hover:bg-slate-50 active:bg-slate-200 font-display text-xl sm:text-2xl font-bold text-slate-800 shadow-xs border border-slate-300 cursor-pointer">8</button>
+            <button onclick="pressKey('9')" class="num-key py-2.5 sm:py-3 rounded-xl bg-white hover:bg-slate-50 active:bg-slate-200 font-display text-xl sm:text-2xl font-bold text-slate-800 shadow-xs border border-slate-300 cursor-pointer">9</button>
+            <button onclick="pressKey('0')" class="num-key py-2.5 sm:py-3 rounded-xl bg-white hover:bg-slate-50 active:bg-slate-200 font-display text-xl sm:text-2xl font-bold text-slate-800 shadow-xs border border-slate-300 cursor-pointer">0</button>
+            <button onclick="pressKey(',')" class="num-key py-2.5 sm:py-3 rounded-xl bg-amber-100 hover:bg-amber-200 active:bg-amber-300 font-display text-2xl font-bold text-amber-900 shadow-xs border border-amber-300 cursor-pointer" title="Coma decimal">
+              ,
+            </button>
+          </div>
+        </div>
+
+        <!-- Área de Feedback y Botones de Acción -->
+        <div>
+          <!-- Caja de Mensajes Constructivos -->
+          <div id="feedbackBanner" class="hidden mb-2.5 p-3 rounded-2xl border-2 text-xs sm:text-sm font-bold flex items-start gap-2.5 animate-pop">
+            <span id="feedbackIcon" class="text-xl shrink-0">💡</span>
+            <p id="feedbackMessage" class="leading-snug"></p>
+          </div>
+
+          <!-- Botones Comprobar / Siguiente -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <button id="btnCheck" onclick="checkChallenge()" class="py-3 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-display font-bold text-base sm:text-lg shadow-md flex items-center justify-center gap-2 transition cursor-pointer">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <span>Comprobar respuesta</span>
+            </button>
+            <button id="btnNext" onclick="nextChallenge()" class="py-3 px-4 rounded-2xl bg-slate-800 hover:bg-slate-900 active:scale-98 text-white font-display font-bold text-base sm:text-lg shadow-md flex items-center justify-center gap-2 transition cursor-pointer">
+              <span>Siguiente reto</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.6" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL: INSTALAR COMO APLICACIÓN (PWA) Y PUBLICAR / DESCARGAR EN GITHUB  -->
+  <!-- ======================================================================= -->
+  <div id="installModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl border-2 border-slate-200 max-w-2xl w-full p-5 sm:p-6 shadow-2xl animate-pop max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-display text-xl font-bold">%</div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Instalar App y Uso en GitHub</h2>
+            <p class="text-xs text-slate-500 font-medium">Compatible con Pantallas Android, Windows, Mac y Chromebook</p>
+          </div>
+        </div>
+        <button onclick="closeAppModal()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center cursor-pointer">✕</button>
+      </div>
+
+      <!-- Botón de Instalación Directa PWA (se activa si el navegador lo soporta) -->
+      <div id="pwaDirectInstallBox" class="mt-4 p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-200 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <span class="font-display font-bold text-emerald-900 text-base block">📲 Instalación rápida en este dispositivo</span>
+          <span class="text-xs text-emerald-800">Crea un acceso directo en el escritorio o pantalla de inicio como app independiente.</span>
+        </div>
+        <button id="btnTriggerInstall" onclick="triggerPWAInstall()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-sm cursor-pointer transition">
+          Instalar ahora
+        </button>
+      </div>
+
+      <div class="mt-4 space-y-3 text-sm text-slate-700">
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+          <h3 class="font-bold text-slate-900 flex items-center gap-1.5 mb-1">
+            <span>1️⃣ Publicar en GitHub Pages (para abrir en cualquier clase)</span>
+          </h3>
+          <ol class="list-decimal list-inside space-y-1 text-xs sm:text-sm text-slate-600">
+            <li>Crea un repositorio público en <strong>GitHub</strong> (ej. <code class="bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">porcentajes-primaria</code>).</li>
+            <li>Sube este archivo renombrado como <code class="bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">index.html</code>.</li>
+            <li>Ve a <strong>Settings → Pages</strong>, elige la rama <code class="bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">main</code> y guarda.</li>
+            <li>Obtendrás un enlace web listo para abrir en los ordenadores y pantallas digitales del colegio.</li>
+          </ol>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+          <h3 class="font-bold text-slate-900 flex items-center gap-1.5 mb-1">
+            <span>2️⃣ Descargar e instalar en modo Aplicación (sin barra del navegador)</span>
+          </h3>
+          <ul class="list-disc list-inside space-y-1 text-xs sm:text-sm text-slate-600">
+            <li><strong>En Pantalla Digital Android / Tablet:</strong> Abre el enlace de GitHub Pages en Chrome, pulsa los <strong>3 puntos (⋮)</strong> y selecciona <em>«Instalar aplicación»</em> o <em>«Añadir a pantalla de inicio»</em>.</li>
+            <li><strong>En Ordenador (Chrome / Edge):</strong> Pulsa el icono de instalar <span class="inline-block bg-slate-200 px-1.5 rounded font-bold">⊕</span> en la barra de direcciones o guarda el archivo <code class="bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">index.html</code> para abrirlo incluso sin Internet.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-4 flex justify-end">
+        <button onclick="closeAppModal()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm cursor-pointer">
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // CONFIGURACIÓN PWA DINÁMICA (MANIFEST + ICONO SVG EMBEDDED) PARA GITHUB PAGES
+    // =========================================================================
+    (function setupPWA() {
+      try {
+        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#4f46e5"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-weight="bold" font-size="270">%</text></svg>`;
+        const iconUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgIcon);
+
+        const manifest = {
+          name: 'Porcentajes en Acción - 5º Primaria',
+          short_name: 'Porcentajes',
+          description: 'Laboratorio interactivo de porcentajes, fracciones y decimales para aula y ordenador.',
+          start_url: './',
+          display: 'standalone',
+          background_color: '#f1f5f9',
+          theme_color: '#4f46e5',
+          orientation: 'any',
+          icons: [
+            { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+            { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+          ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = manifestURL;
+        document.head.appendChild(link);
+
+        // Registrar Service Worker ligero solo si se sirve por HTTP/HTTPS (ej. GitHub Pages)
+        if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+          const swCode = `
+            self.addEventListener('install', (e) => self.skipWaiting());
+            self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+            self.addEventListener('fetch', (e) => {
+              e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+            });
+          `;
+          const swBlob = new Blob([swCode], { type: 'application/javascript' });
+          navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+        }
+      } catch (err) {
+        // Ignorar silenciosamente en entornos sandboxed
+      }
+    })();
+
+    let deferredInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const box = document.getElementById('pwaDirectInstallBox');
+      if (box) box.classList.remove('hidden');
+    });
+
+    function openAppModal() {
+      const box = document.getElementById('pwaDirectInstallBox');
+      if (!deferredInstallPrompt) {
+        box.classList.add('hidden');
+      } else {
+        box.classList.remove('hidden');
+      }
+      document.getElementById('installModal').classList.remove('hidden');
+    }
+
+    function closeAppModal() {
+      document.getElementById('installModal').classList.add('hidden');
+    }
+
+    async function triggerPWAInstall() {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      closeAppModal();
+    }
+
+    // =========================================================================
+    // CONFIGURACIÓN DE TEMAS VISUALES PARA EL AULA
+    // =========================================================================
+    const THEMES = {
+      indigo: {
+        cellBg: 'bg-indigo-600',
+        cellBorder: 'border-indigo-700',
+        barBg: 'bg-indigo-600',
+        brandBg: 'bg-indigo-600',
+        tabBg: 'bg-indigo-600',
+        sliderText: 'text-indigo-600',
+        badgeText: 'text-indigo-700',
+        badgeBg: 'bg-indigo-50',
+        badgeBorder: 'border-indigo-200',
+        btnBg: 'bg-indigo-600 hover:bg-indigo-700'
+      },
+      emerald: {
+        cellBg: 'bg-emerald-600',
+        cellBorder: 'border-emerald-700',
+        barBg: 'bg-emerald-600',
+        brandBg: 'bg-emerald-600',
+        tabBg: 'bg-emerald-600',
+        sliderText: 'text-emerald-600',
+        badgeText: 'text-emerald-700',
+        badgeBg: 'bg-emerald-50',
+        badgeBorder: 'border-emerald-200',
+        btnBg: 'bg-emerald-600 hover:bg-emerald-700'
+      },
+      amber: {
+        cellBg: 'bg-amber-500',
+        cellBorder: 'border-amber-600',
+        barBg: 'bg-amber-500',
+        brandBg: 'bg-amber-500',
+        tabBg: 'bg-amber-500',
+        sliderText: 'text-amber-500',
+        badgeText: 'text-amber-800',
+        badgeBg: 'bg-amber-50',
+        badgeBorder: 'border-amber-200',
+        btnBg: 'bg-amber-500 hover:bg-amber-600'
+      },
+      rose: {
+        cellBg: 'bg-rose-600',
+        cellBorder: 'border-rose-700',
+        barBg: 'bg-rose-600',
+        brandBg: 'bg-rose-600',
+        tabBg: 'bg-rose-600',
+        sliderText: 'text-rose-600',
+        badgeText: 'text-rose-700',
+        badgeBg: 'bg-rose-50',
+        badgeBorder: 'border-rose-200',
+        btnBg: 'bg-rose-600 hover:bg-rose-700'
+      }
+    };
+
+    let currentTheme = 'indigo';
+    let currentMode = 'lab'; // 'lab' | 'challenges'
+
+    // =========================================================================
+    // ESTADO DE LA PANTALLA 1: LABORATORIO 10x10
+    // =========================================================================
+    let labCells = new Array(100).fill(false);
+    let isPointerDownLab = false;
+    let paintActionLab = true;
+
+    // =========================================================================
+    // ESTADO DE LA PANTALLA 2: RETOS DE LA VIDA REAL (3 NIVELES × 10 RETOS)
+    // =========================================================================
+    let difficulty = 1; // 1 = Clásicos, 2 = Problemas cotidianos, 3 = Descuentos y Aumentos / IVA
+    let challengeCells = new Array(100).fill(false);
+    let isPointerDownChallenge = false;
+    let paintActionChallenge = true;
+
+    let currentChallenge = null;
+    let challengeIndex = 0; // 0 a 9 dentro de cada nivel
+    let scoreStars = 0;
+    let solvedSet = new Set(); // Guarda claves "nivel-indice" resueltos
+
+    let activeField = 'percent'; // 'percent' | 'num' | 'den' | 'decimal'
+    let inputs = {
+      percent: '',
+      num: '',
+      den: '',
+      decimal: ''
+    };
+
+    // =========================================================================
+    // BANCO DE 30 RETOS (10 POR NIVEL) ADAPTADOS A 5º DE PRIMARIA
+    // =========================================================================
+    const CHALLENGES_DB = [
+      // -----------------------------------------------------------------------
+      // NIVEL 1 (10 RETOS): PORCENTAJES CLAVE DE LA VIDA REAL
+      // -----------------------------------------------------------------------
+      {
+        level: 1,
+        targetPercent: 50,
+        emoji: '👕',
+        category: 'Rebajas',
+        text: 'Una camiseta cuesta 20 €, pero hoy tiene una etiqueta de mitad de precio: <span class="text-indigo-700 underline decoration-2">50% de descuento</span>.'
+      },
+      {
+        level: 1,
+        targetPercent: 25,
+        emoji: '🔋',
+        category: 'Tecnología',
+        text: 'A la tableta de clase le queda un cuarto de batería, es decir, un <span class="text-indigo-700 underline decoration-2">25% de carga</span>.'
+      },
+      {
+        level: 1,
+        targetPercent: 10,
+        emoji: '📚',
+        category: 'Librería',
+        text: 'Con el carné de lector te hacen la décima parte de rebaja: un <span class="text-indigo-700 underline decoration-2">10% de descuento</span>.'
+      },
+      {
+        level: 1,
+        targetPercent: 75,
+        emoji: '📖',
+        category: 'Lectura',
+        text: 'Ya has leído tres cuartas partes de tu novela favorita: llevas el <span class="text-indigo-700 underline decoration-2">75% del libro</span>.'
+      },
+      {
+        level: 1,
+        targetPercent: 20,
+        emoji: '🧥',
+        category: 'Tienda',
+        text: 'En la tienda de ropa, un abrigo tiene una rebaja de la quinta parte: <span class="text-indigo-700 underline decoration-2">20% de descuento</span>.'
+      },
+      {
+        level: 1,
+        targetPercent: 100,
+        emoji: '🚌',
+        category: 'Excursión',
+        text: '¡No falta nadie! El autobús de 5º de Primaria está lleno al <span class="text-indigo-700 underline decoration-2">100%</span>.'
+      },
+      {
+        level: 1,
+        targetPercent: 30,
+        emoji: '👟',
+        category: 'Deportes',
+        text: 'Unas zapatillas de atletismo tienen un cartel con el <span class="text-indigo-700 underline decoration-2">30% de descuento</span>.'
+      },
+      {
+        level: 1,
+        targetPercent: 40,
+        emoji: '🍫',
+        category: 'Alimentación',
+        text: 'Esta tableta de chocolate con leche contiene un <span class="text-indigo-700 underline decoration-2">40% de cacao</span>.'
+      },
+      {
+        level: 1,
+        targetPercent: 80,
+        emoji: '🏟️',
+        category: 'Evento',
+        text: 'Para el torneo deportivo del colegio se han ocupado el <span class="text-indigo-700 underline decoration-2">80%</span> de los asientos.'
+      },
+      {
+        level: 1,
+        targetPercent: 5,
+        emoji: '🪫',
+        category: 'Móvil',
+        text: '¡Pon el cargador! Al teléfono solo le queda un <span class="text-indigo-700 underline decoration-2">5% de batería</span>.'
+      },
+
+      // -----------------------------------------------------------------------
+      // NIVEL 2 (10 RETOS): PROBLEMAS COTIDIANOS Y RAZONAMIENTO (5º PRIMARIA)
+      // -----------------------------------------------------------------------
+      {
+        level: 2,
+        targetPercent: 15,
+        emoji: '🎒',
+        category: 'Compras',
+        text: 'En una mochila de 40 € te rebajan 15 € de cada 100 €. Representa ese <span class="text-indigo-700 underline decoration-2">15% de descuento</span>.'
+      },
+      {
+        level: 2,
+        targetPercent: 65,
+        emoji: '🎭',
+        category: 'Teatro',
+        text: 'En el salón de actos queda libre un 35% de las butacas. ¿Qué <strong>porcentaje está ocupado</strong>?'
+      },
+      {
+        level: 2,
+        targetPercent: 45,
+        emoji: '💧',
+        category: 'Ciencias',
+        text: 'Una garrafa de agua está llena casi hasta la mitad: tiene exactamente el <span class="text-indigo-700 underline decoration-2">45%</span>.'
+      },
+      {
+        level: 2,
+        targetPercent: 60,
+        emoji: '🏫',
+        category: 'Colegio',
+        text: 'En clase de 5º, el 40% son niños y el resto son niñas. ¿Qué <strong>porcentaje son niñas</strong>?'
+      },
+      {
+        level: 2,
+        targetPercent: 70,
+        emoji: '🌍',
+        category: 'Geografía',
+        text: 'En nuestro planeta, 30 de cada 100 partes son tierra firme y el resto es agua. ¿Qué <strong>porcentaje es agua</strong>?'
+      },
+      {
+        level: 2,
+        targetPercent: 85,
+        emoji: '🎟️',
+        category: 'Cine',
+        text: 'Para el estreno de una película de animación ya se ha vendido el <span class="text-indigo-700 underline decoration-2">85%</span> de las entradas.'
+      },
+      {
+        level: 2,
+        targetPercent: 12,
+        emoji: '🍊',
+        category: 'Etiqueta',
+        text: 'Un refresco lleva solo <span class="text-indigo-700 underline decoration-2">12% de zumo natural</span> de naranja y el resto es agua con gas.'
+      },
+      {
+        level: 2,
+        targetPercent: 90,
+        emoji: '🎯',
+        category: 'Juego',
+        text: 'De 100 lanzamientos a canasta, fallaste 10 y encestaste el resto. ¿Cuál fue tu <strong>porcentaje de aciertos</strong>?'
+      },
+      {
+        level: 2,
+        targetPercent: 35,
+        emoji: '🚴',
+        category: 'Ciclismo',
+        text: 'En una etapa ciclista de 100 km, faltan 65 km para la meta. ¿Qué <strong>porcentaje del recorrido</strong> has completado ya?'
+      },
+      {
+        level: 2,
+        targetPercent: 55,
+        emoji: '♻️',
+        category: 'Ecología',
+        text: 'En el colegio se recicla el <span class="text-indigo-700 underline decoration-2">55%</span> del papel usado cada semana.'
+      },
+
+      // -----------------------------------------------------------------------
+      // NIVEL 3 (10 RETOS): DESCUENTOS Y AUMENTOS / IVA (5º DE PRIMARIA)
+      // -----------------------------------------------------------------------
+      {
+        level: 3,
+        targetPercent: 21,
+        emoji: '🧾',
+        category: 'Impuesto IVA',
+        text: 'Compras una bicicleta y en el tique aparece un aumento del <span class="text-purple-700 underline decoration-2">21% de IVA</span>. Representa el porcentaje de impuesto añadido.'
+      },
+      {
+        level: 3,
+        targetPercent: 80,
+        emoji: '🏷️',
+        category: 'Precio Final',
+        text: 'Un juego de mesa tiene un <strong>20% de descuento</strong> sobre su precio (100%). ¿Qué <strong>porcentaje del precio pagas</strong> al final?'
+      },
+      {
+        level: 3,
+        targetPercent: 10,
+        emoji: '🍽️',
+        category: 'IVA Reducido',
+        text: 'En un restaurante, a la cuenta de la comida se le suma un impuesto del <span class="text-purple-700 underline decoration-2">10% de IVA</span>. Representa ese aumento.'
+      },
+      {
+        level: 3,
+        targetPercent: 70,
+        emoji: '👟',
+        category: 'Rebajas',
+        text: 'Unas botas tienen una rebaja del <strong>30%</strong> (se resta al 100%). ¿Qué <strong>porcentaje del precio original</strong> cuesta ahora?'
+      },
+      {
+        level: 3,
+        targetPercent: 4,
+        emoji: '🥖',
+        category: 'IVA Básico',
+        text: 'Los libros de texto y el pan llevan un impuesto muy bajo: solo suben un <span class="text-purple-700 underline decoration-2">4% de IVA</span>. Representa ese porcentaje.'
+      },
+      {
+        level: 3,
+        targetPercent: 15,
+        emoji: '📦',
+        category: 'Envío + Descuento',
+        text: 'Una tienda hace un <strong>25% de descuento</strong>, pero suma un <strong>10% por envío</strong> a casa. ¿Cuál es la <strong>rebaja real final</strong> (25% − 10%)?'
+      },
+      {
+        level: 3,
+        targetPercent: 75,
+        emoji: '🎮',
+        category: 'Precio Rebajado',
+        text: 'Un mando de consola tiene un <strong>25% de descuento</strong>. Si el precio completo es el 100%, ¿qué <strong>porcentaje pagas</strong> en caja?'
+      },
+      {
+        level: 3,
+        targetPercent: 8,
+        emoji: '💳',
+        category: 'Recargo',
+        text: 'Al comprar entradas por Internet cobran un aumento del <span class="text-purple-700 underline decoration-2">8% de gastos de gestión</span>. Representa ese recargo.'
+      },
+      {
+        level: 3,
+        targetPercent: 25,
+        emoji: '🛒',
+        category: 'Doble Oferta',
+        text: 'Un patinete tiene un <strong>15% de descuento</strong> en tienda y un <strong>10% extra</strong> con el cupón del club. ¿Qué <strong>descuento total</strong> acumulas?'
+      },
+      {
+        level: 3,
+        targetPercent: 85,
+        emoji: '🧾',
+        category: 'Descuento + IVA',
+        text: 'Un artículo cuesta el 100%, le restan un <strong>25% de descuento</strong> y luego le suman un <strong>10% de IVA</strong>. ¿Qué <strong>porcentaje final pagas</strong> (100 − 25 + 10)?'
+      }
+    ];
+
+    // =========================================================================
+    // UTILIDADES MATEMÁTICAS
+    // =========================================================================
+    function gcd(a, b) {
+      a = Math.abs(a);
+      b = Math.abs(b);
+      while (b !== 0) {
+        let t = b;
+        b = a % b;
+        a = t;
+      }
+      return a;
+    }
+
+    function formatSpanishDecimal(count) {
+      if (count === 0) return '0';
+      if (count === 100) return '1';
+      let val = (count / 100).toFixed(2).replace('.', ',');
+      if (val.endsWith('0')) {
+        val = val.slice(0, -1);
+      }
+      return val;
+    }
+
+    // =========================================================================
+    // INICIALIZACIÓN DE CUADRÍCULAS TÁCTILES Y DE RATÓN 10x10
+    // =========================================================================
+    function buildGrid(containerId, cellsArray, onCellInteract, getPointerDown, setPointerDown, getPaintAction, setPaintAction) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      for (let i = 0; i < 100; i++) {
+        const cell = document.createElement('div');
+        cell.dataset.index = i;
+        cell.className = 'cell-item rounded-md sm:rounded-lg bg-white border border-slate-300 cursor-pointer flex items-center justify-center';
+        
+        cell.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          if (e.target.hasPointerCapture && e.target.hasPointerCapture(e.pointerId)) {
+            e.target.releasePointerCapture(e.pointerId);
+          }
+          setPointerDown(true);
+          const nextState = !cellsArray[i];
+          setPaintAction(nextState);
+          onCellInteract(i, nextState);
+        });
+
+        cell.addEventListener('pointerenter', () => {
+          if (getPointerDown()) {
+            onCellInteract(i, getPaintAction());
+          }
+        });
+
+        container.appendChild(cell);
+      }
+
+      // Soporte continuo para arrastre táctil en pantallas Android/iOS
+      container.addEventListener('touchmove', (e) => {
+        if (!getPointerDown()) return;
+        const touch = e.touches[0];
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (target && target.dataset && target.dataset.index !== undefined) {
+          const idx = parseInt(target.dataset.index, 10);
+          if (cellsArray[idx] !== getPaintAction()) {
+            onCellInteract(idx, getPaintAction());
+          }
+        }
+      }, { passive: true });
+    }
+
+    window.addEventListener('pointerup', () => {
+      isPointerDownLab = false;
+      isPointerDownChallenge = false;
+    });
+
+    // =========================================================================
+    // LÓGICA DE PANTALLA 1: LABORATORIO MANIPULATIVO
+    // =========================================================================
+    function renderLabGrid() {
+      const container = document.getElementById('labGrid');
+      const children = container.children;
+      const theme = THEMES[currentTheme];
+
+      for (let i = 0; i < 100; i++) {
+        const cell = children[i];
+        if (labCells[i]) {
+          cell.className = `cell-item rounded-md sm:rounded-lg ${theme.cellBg} border ${theme.cellBorder} cursor-pointer shadow-xs`;
+        } else {
+          cell.className = 'cell-item rounded-md sm:rounded-lg bg-white border border-slate-300 hover:bg-slate-50 cursor-pointer';
+        }
+      }
+      updateLabMathDisplay();
+    }
+
+    function updateLabMathDisplay() {
+      const count = labCells.filter(Boolean).length;
+      const theme = THEMES[currentTheme];
+
+      document.getElementById('labPaintedText').textContent = count;
+      document.getElementById('labUnpaintedText').textContent = 100 - count;
+      document.getElementById('sliderBadge').textContent = `${count} %`;
+      document.getElementById('labSlider').value = count;
+      document.getElementById('labMeaningBadge').textContent = `${count} de cada 100`;
+
+      // 1. Porcentaje
+      document.getElementById('displayPercent').textContent = `${count} %`;
+      document.getElementById('displayPercentSub').textContent = `${count} por ciento`;
+
+      // 2. Fracción decimal y simplificada
+      document.getElementById('displayFracNum').textContent = count;
+      const divisor = count === 0 ? 100 : gcd(count, 100);
+      const simpNum = count / divisor;
+      const simpDen = 100 / divisor;
+
+      const simpContainer = document.getElementById('simplifiedContainer');
+      if (count === 0) {
+        simpContainer.classList.add('hidden');
+        document.getElementById('displayFracSub').textContent = 'Ninguna parte seleccionada';
+      } else if (divisor > 1) {
+        simpContainer.classList.remove('hidden');
+        document.getElementById('displaySimpNum').textContent = simpNum;
+        document.getElementById('displaySimpDen').textContent = simpDen;
+        document.getElementById('displayFracSub').textContent = simpDen === 1 ? `Equivale a ${simpNum} entero` : `Simplificada: ${simpNum}/${simpDen}`;
+      } else {
+        simpContainer.classList.add('hidden');
+        document.getElementById('displayFracSub').textContent = 'Fracción irreducible';
+      }
+
+      // 3. Número decimal
+      const decStr = formatSpanishDecimal(count);
+      document.getElementById('displayDecimal').textContent = decStr;
+      document.getElementById('displayDecimalSub').textContent = count === 1 ? '1 centésima' : `${count} centésimas`;
+
+      // Barra de progreso
+      const bar = document.getElementById('labProgressBar');
+      bar.style.width = `${count}%`;
+      bar.className = `h-full rounded-full ${theme.barBg} transition-all duration-200`;
+
+      // Resaltar botones preset si coinciden
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        const val = parseInt(btn.textContent, 10);
+        if (val === count) {
+          btn.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-50', 'border-indigo-500');
+        } else {
+          btn.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50', 'border-indigo-500');
+        }
+      });
+    }
+
+    function setLabCount(target) {
+      target = Math.max(0, Math.min(100, target));
+      for (let i = 0; i < 100; i++) {
+        labCells[i] = i < target;
+      }
+      renderLabGrid();
+    }
+
+    function adjustLabCount(delta) {
+      const current = labCells.filter(Boolean).length;
+      setLabCount(current + delta);
+    }
+
+    function organizeLabGrid() {
+      const count = labCells.filter(Boolean).length;
+      setLabCount(count);
+    }
+
+    // =========================================================================
+    // LÓGICA DE PANTALLA 2: RETOS DE LA VIDA REAL (3 NIVELES × 10 RETOS)
+    // =========================================================================
+    function renderChallengeGrid() {
+      const container = document.getElementById('challengeGrid');
+      const children = container.children;
+      const theme = THEMES[currentTheme];
+
+      for (let i = 0; i < 100; i++) {
+        const cell = children[i];
+        if (challengeCells[i]) {
+          cell.className = `cell-item rounded-sm sm:rounded-md ${theme.cellBg} border ${theme.cellBorder} cursor-pointer`;
+        } else {
+          cell.className = 'cell-item rounded-sm sm:rounded-md bg-white border border-slate-300 hover:bg-slate-50 cursor-pointer';
+        }
+      }
+      const count = challengeCells.filter(Boolean).length;
+      document.getElementById('challengePaintedCount').textContent = count;
+    }
+
+    function clearChallengeGrid() {
+      challengeCells.fill(false);
+      renderChallengeGrid();
+    }
+
+    function adjustChallengeGrid(delta) {
+      const current = challengeCells.filter(Boolean).length;
+      const next = Math.max(0, Math.min(100, current + delta));
+      for (let i = 0; i < 100; i++) {
+        challengeCells[i] = i < next;
+      }
+      renderChallengeGrid();
+    }
+
+    function setDifficulty(lvl) {
+      difficulty = lvl;
+      [1, 2, 3].forEach(n => {
+        const btn = document.getElementById(`btnDiff${n}`);
+        if (n === lvl) {
+          const activeColor = lvl === 3 ? 'text-purple-700' : 'text-indigo-700';
+          btn.className = `px-2.5 py-1.5 rounded-lg font-bold text-xs sm:text-sm bg-white ${activeColor} shadow-xs cursor-pointer transition`;
+        } else {
+          btn.className = 'px-2.5 py-1.5 rounded-lg font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 cursor-pointer transition';
+        }
+      });
+
+      // Mostrar botón de ayuda contextual solo en Nivel 3
+      const helpBtn = document.getElementById('btnToggleLevel3Help');
+      const helpCard = document.getElementById('level3HelpCard');
+      if (lvl === 3) {
+        helpBtn.classList.remove('hidden');
+      } else {
+        helpBtn.classList.add('hidden');
+        helpCard.classList.add('hidden');
+      }
+
+      loadChallengeAt(0);
+    }
+
+    function toggleLevel3Help() {
+      const card = document.getElementById('level3HelpCard');
+      card.classList.toggle('hidden');
+    }
+
+    function renderChallengeDots() {
+      const bar = document.getElementById('challengeDotsBar');
+      const pool = CHALLENGES_DB.filter(c => c.level === difficulty);
+      bar.innerHTML = '';
+
+      let solvedInLevel = 0;
+      pool.forEach((_, idx) => {
+        const key = `${difficulty}-${idx}`;
+        const isDone = solvedSet.has(key);
+        if (isDone) solvedInLevel++;
+
+        const btn = document.createElement('button');
+        btn.textContent = isDone ? '✓' : (idx + 1);
+        btn.title = `Ir al reto ${idx + 1}`;
+        btn.onclick = () => loadChallengeAt(idx);
+
+        if (idx === challengeIndex) {
+          btn.className = `w-7 h-7 sm:w-8 sm:h-8 rounded-lg font-display font-bold text-xs sm:text-sm flex items-center justify-center shrink-0 transition cursor-pointer ${
+            difficulty === 3 ? 'bg-purple-600 text-white ring-2 ring-purple-300' : 'bg-indigo-600 text-white ring-2 ring-indigo-300'
+          }`;
+        } else if (isDone) {
+          btn.className = 'w-7 h-7 sm:w-8 sm:h-8 rounded-lg font-display font-bold text-xs sm:text-sm flex items-center justify-center shrink-0 bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200 transition cursor-pointer';
+        } else {
+          btn.className = 'w-7 h-7 sm:w-8 sm:h-8 rounded-lg font-display font-bold text-xs sm:text-sm flex items-center justify-center shrink-0 bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200 transition cursor-pointer';
+        }
+        bar.appendChild(btn);
+      });
+
+      document.getElementById('levelProgressText').textContent = `${solvedInLevel}/${pool.length}`;
+    }
+
+    function loadChallengeAt(idx) {
+      const pool = CHALLENGES_DB.filter(c => c.level === difficulty);
+      challengeIndex = (idx + pool.length) % pool.length;
+      currentChallenge = pool[challengeIndex];
+
+      // Actualizar tarjeta de enunciado
+      const promptBox = document.getElementById('challengePromptBox');
+      promptBox.classList.remove('animate-pop');
+      void promptBox.offsetWidth;
+      promptBox.classList.add('animate-pop');
+
+      const catEl = document.getElementById('challengeCategory');
+      if (difficulty === 3) {
+        promptBox.className = 'mt-2 p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-purple-50 to-fuchsia-50 border-2 border-purple-200 flex items-start gap-3 animate-pop';
+        catEl.className = 'text-[11px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-purple-600 text-white';
+      } else {
+        promptBox.className = 'mt-2 p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 to-sky-50 border-2 border-indigo-200 flex items-start gap-3 animate-pop';
+        catEl.className = 'text-[11px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-indigo-600 text-white';
+      }
+
+      document.getElementById('challengeEmoji').textContent = currentChallenge.emoji;
+      catEl.textContent = currentChallenge.category;
+      document.getElementById('challengeNumberLabel').textContent = `Reto ${challengeIndex + 1} de ${pool.length}`;
+      document.getElementById('challengeText').innerHTML = currentChallenge.text;
+
+      // Limpiar cuadrícula y campos
+      clearChallengeGrid();
+      inputs = { percent: '', num: '', den: '', decimal: '' };
+      updateInputDisplays();
+      focusField('percent');
+      renderChallengeDots();
+
+      // Ocultar feedback
+      document.getElementById('feedbackBanner').classList.add('hidden');
+    }
+
+    function nextChallenge() {
+      loadChallengeAt(challengeIndex + 1);
+    }
+
+    // Gestión de campos numéricos y teclado
+    function focusField(field) {
+      activeField = field;
+      const fields = ['percent', 'num', 'den', 'decimal'];
+      fields.forEach(f => {
+        const el = document.getElementById(`box-${f}`);
+        if (f === field) {
+          el.classList.add('ring-4', 'ring-indigo-500/25', 'border-indigo-600', 'scale-[1.02]');
+        } else {
+          el.classList.remove('ring-4', 'ring-indigo-500/25', 'border-indigo-600', 'scale-[1.02]');
+        }
+      });
+    }
+
+    function updateInputDisplays() {
+      document.getElementById('val-percent').innerHTML = inputs.percent !== '' ? inputs.percent : '<span class="text-slate-300">?</span>';
+      document.getElementById('box-num').innerHTML = inputs.num !== '' ? inputs.num : '<span class="text-slate-300">?</span>';
+      document.getElementById('box-den').innerHTML = inputs.den !== '' ? inputs.den : '<span class="text-slate-300">?</span>';
+      document.getElementById('val-decimal').innerHTML = inputs.decimal !== '' ? inputs.decimal : '<span class="text-slate-300">?</span>';
+    }
+
+    function pressKey(char) {
+      let val = inputs[activeField];
+      if (char === ',' && activeField !== 'decimal') return;
+      if (char === ',' && val.includes(',')) return;
+      if (char === ',' && val === '') val = '0';
+      if (val.length >= 5) return;
+
+      inputs[activeField] = val + char;
+      updateInputDisplays();
+    }
+
+    function pressBackspace() {
+      let val = inputs[activeField];
+      if (val.length > 0) {
+        inputs[activeField] = val.slice(0, -1);
+        updateInputDisplays();
+      }
+    }
+
+    // Soporte completo de teclado físico de ordenador (en ambos modos)
+    window.addEventListener('keydown', (e) => {
+      // Cerrar modal con Escape
+      if (e.key === 'Escape') {
+        closeAppModal();
+        return;
+      }
+
+      // Modo Explorar 10x10: flechas de teclado ajustan la cuadrícula
+      if (currentMode === 'lab') {
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          adjustLabCount(1);
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          adjustLabCount(-1);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          adjustLabCount(10);
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          adjustLabCount(-10);
+        }
+        return;
+      }
+
+      // Modo Retos: escribir directamente con teclado físico
+      if (currentMode === 'challenges') {
+        if (e.key >= '0' && e.key <= '9') {
+          pressKey(e.key);
+        } else if (e.key === ',' || e.key === '.') {
+          pressKey(',');
+        } else if (e.key === 'Backspace') {
+          pressBackspace();
+        } else if (e.key === 'Tab') {
+          e.preventDefault();
+          const order = ['percent', 'num', 'den', 'decimal'];
+          const nextIdx = (order.indexOf(activeField) + 1) % order.length;
+          focusField(order[nextIdx]);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          checkChallenge();
+        }
+      }
+    });
+
+    // Verificación integral del reto
+    function checkChallenge() {
+      const target = currentChallenge.targetPercent;
+      const painted = challengeCells.filter(Boolean).length;
+
+      const userPercent = parseInt(inputs.percent, 10);
+      const userNum = parseInt(inputs.num, 10);
+      const userDen = parseInt(inputs.den, 10);
+      const userDecimal = parseFloat(inputs.decimal.replace(',', '.'));
+
+      const isGridOk = painted === target;
+      const isPercentOk = !isNaN(userPercent) && userPercent === target;
+      // Cualquier fracción equivalente es válida (ej. 20/100, 1/5, 2/10...)
+      const isFractionOk = !isNaN(userNum) && !isNaN(userDen) && userDen > 0 && (userNum * 100 === target * userDen);
+      const isDecimalOk = !isNaN(userDecimal) && Math.abs(userDecimal - (target / 100)) < 0.0001;
+
+      const fb = document.getElementById('feedbackBanner');
+      const fbIcon = document.getElementById('feedbackIcon');
+      const fbMsg = document.getElementById('feedbackMessage');
+      fb.classList.remove('hidden');
+
+      if (isGridOk && isPercentOk && isFractionOk && isDecimalOk) {
+        const key = `${difficulty}-${challengeIndex}`;
+        const isFirstTime = !solvedSet.has(key);
+        if (isFirstTime) {
+          solvedSet.add(key);
+          scoreStars += 1;
+          document.getElementById('scoreStars').textContent = scoreStars;
+          renderChallengeDots();
+        }
+
+        const pool = CHALLENGES_DB.filter(c => c.level === difficulty);
+        const solvedInLevel = pool.filter((_, idx) => solvedSet.has(`${difficulty}-${idx}`)).length;
+
+        fb.className = 'mb-2.5 p-3 rounded-2xl border-2 border-emerald-300 bg-emerald-50 text-emerald-900 text-xs sm:text-sm font-bold flex items-start gap-2.5 animate-pop';
+        fbIcon.textContent = solvedInLevel === pool.length ? '🏆' : '🎉';
+
+        const div = gcd(target, 100);
+        const simpTxt = div > 1 && target < 100 ? ` (o ${target / div}/${100 / div})` : '';
+
+        if (solvedInLevel === pool.length) {
+          fbMsg.innerHTML = `¡NIVEL ${difficulty} COMPLETADO (10/10)! Has dominado el <strong>${target}%</strong> = <strong>${target}/100</strong>${simpTxt} = <strong>${formatSpanishDecimal(target)}</strong>.`;
+        } else {
+          fbMsg.innerHTML = `¡Genial! Has representado el <strong>${target}%</strong> correctamente: <strong>${target}/100</strong>${simpTxt} y <strong>${formatSpanishDecimal(target)}</strong>. Pulsa «Siguiente reto».`;
+        }
+      } else {
+        let hints = [];
+        if (!isGridOk) {
+          hints.push(`en la cuadrícula has pintado <strong>${painted}</strong> casillas y el problema pide <strong>${target}</strong>`);
+        }
+        if (!isPercentOk) {
+          hints.push(`revisa la casilla de <strong>Porcentaje (%)</strong>`);
+        }
+        if (!isFractionOk) {
+          hints.push(`revisa la <strong>Fracción</strong> (sobre 100 o una equivalente)`);
+        }
+        if (!isDecimalOk) {
+          hints.push(`revisa el <strong>Decimal</strong> (divide entre 100, por ejemplo 0,${target < 10 ? '0' + target : target})`);
+        }
+
+        fb.className = 'mb-2.5 p-3 rounded-2xl border-2 border-amber-300 bg-amber-50 text-amber-950 text-xs sm:text-sm font-bold flex items-start gap-2.5 animate-pop';
+        fbIcon.textContent = '🔎';
+        fbMsg.innerHTML = `¡Fíjate bien! ${hints.join(', ')}.`;
+      }
+    }
+
+    // =========================================================================
+    // NAVEGACIÓN ENTRE PANTALLAS Y CAMBIO DE TEMA
+    // =========================================================================
+    function switchMode(mode) {
+      currentMode = mode;
+      const viewLab = document.getElementById('viewLab');
+      const viewChallenges = document.getElementById('viewChallenges');
+      const tabLab = document.getElementById('tabLab');
+      const tabChallenges = document.getElementById('tabChallenges');
+      const theme = THEMES[currentTheme];
+
+      if (mode === 'lab') {
+        viewLab.classList.remove('hidden');
+        viewChallenges.classList.add('hidden');
+        tabLab.className = `px-3.5 sm:px-5 py-2 rounded-xl font-display font-semibold text-sm sm:text-lg flex items-center gap-2 transition-all ${theme.tabBg} text-white shadow-sm cursor-pointer`;
+        tabChallenges.className = 'px-3.5 sm:px-5 py-2 rounded-xl font-display font-semibold text-sm sm:text-lg flex items-center gap-2 transition-all text-slate-600 hover:bg-white/70 cursor-pointer';
+      } else {
+        viewLab.classList.add('hidden');
+        viewChallenges.classList.remove('hidden');
+        tabChallenges.className = `px-3.5 sm:px-5 py-2 rounded-xl font-display font-semibold text-sm sm:text-lg flex items-center gap-2 transition-all ${theme.tabBg} text-white shadow-sm cursor-pointer`;
+        tabLab.className = 'px-3.5 sm:px-5 py-2 rounded-xl font-display font-semibold text-sm sm:text-lg flex items-center gap-2 transition-all text-slate-600 hover:bg-white/70 cursor-pointer';
+        if (!currentChallenge) {
+          loadChallengeAt(0);
+        }
+      }
+    }
+
+    function setTheme(themeKey) {
+      currentTheme = themeKey;
+      const theme = THEMES[themeKey];
+
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        if (btn.dataset.theme === themeKey) {
+          btn.classList.remove('opacity-75');
+          btn.classList.add('ring-2', 'ring-slate-700', 'scale-110');
+        } else {
+          btn.classList.add('opacity-75');
+          btn.classList.remove('ring-2', 'ring-slate-700', 'scale-110');
+        }
+      });
+
+      document.getElementById('brandIcon').className = `w-11 h-11 rounded-2xl ${theme.brandBg} text-white flex items-center justify-center font-display text-2xl font-bold shadow-md`;
+      document.getElementById('legendActiveBox').className = `w-4 h-4 rounded ${theme.cellBg} inline-block`;
+      document.getElementById('labSlider').className = `big-slider w-full bg-slate-200 ${theme.sliderText}`;
+      document.getElementById('sliderBadge').className = `font-display font-bold text-lg ${theme.badgeText}`;
+      document.getElementById('labMeaningBadge').className = `px-3 py-1 rounded-full text-sm font-bold ${theme.badgeBg} ${theme.badgeText} border ${theme.badgeBorder}`;
+      document.getElementById('btnCheck').className = `py-3 px-4 rounded-2xl ${theme.btnBg} active:scale-98 text-white font-display font-bold text-base sm:text-lg shadow-md flex items-center justify-center gap-2 transition cursor-pointer`;
+
+      switchMode(currentMode);
+      renderLabGrid();
+      renderChallengeGrid();
+    }
+
+    // =========================================================================
+    // ARRANQUE INICIAL DE LA APLICACIÓN
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      buildGrid(
+        'labGrid',
+        labCells,
+        (idx, state) => {
+          labCells[idx] = state;
+          renderLabGrid();
+        },
+        () => isPointerDownLab,
+        (v) => { isPointerDownLab = v; },
+        () => paintActionLab,
+        (v) => { paintActionLab = v; }
+      );
+
+      buildGrid(
+        'challengeGrid',
+        challengeCells,
+        (idx, state) => {
+          challengeCells[idx] = state;
+          renderChallengeGrid();
+        },
+        () => isPointerDownChallenge,
+        (v) => { isPointerDownChallenge = v; },
+        () => paintActionChallenge,
+        (v) => { paintActionChallenge = v; }
+      );
+
+      setLabCount(25);
+      loadChallengeAt(0);
+    });
+  </script>
+</body>
+</html>
